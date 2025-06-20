@@ -43,24 +43,6 @@ declare const Wallet_base: {
         getBridgehubContract(): Promise<IBridgehub>;
         getL1BridgeContracts(): Promise<{
             erc20: IL1ERC20Bridge;
-            /**
-             * @inheritDoc
-             *
-             * @example
-             *
-             * import { Wallet, Provider, types, utils } from "zksync-ethers";
-             * import { ethers } from "ethers";
-             *
-             * const PRIVATE_KEY = "<WALLET_PRIVATE_KEY>";
-             *
-             * const provider = Provider.getDefaultProvider(types.Network.Sepolia);
-             * const ethProvider = ethers.getDefaultProvider("sepolia");
-             * const wallet = new Wallet(PRIVATE_KEY, provider, ethProvider);
-             *
-             * const tokenL1 = "0x56E69Fa1BB0d1402c89E3A4E3417882DeA6B14Be";
-             *
-             * console.log(`Token balance: ${await wallet.getBalanceL1(tokenL1)}`);
-             */
             weth: IL1ERC20Bridge;
             shared: IL1SharedBridge;
         }>;
@@ -104,27 +86,7 @@ declare const Wallet_base: {
             amount: BigNumberish;
             to?: string | undefined;
             operatorTip?: BigNumberish | undefined;
-            bridgeAddress?: string | undefined; /**
-             * @inheritDoc
-             *
-             * @example
-             *
-             * import { Wallet, Provider, types, utils } from "zksync-ethers";
-             * import { ethers } from "ethers";
-             *
-             * const PRIVATE_KEY = "<WALLET_PRIVATE_KEY>";
-             *
-             * const provider = Provider.getDefaultProvider(types.Network.Sepolia);
-             * const ethProvider = ethers.getDefaultProvider("sepolia");
-             * const wallet = new Wallet(PRIVATE_KEY, provider, ethProvider);
-             *
-             * const tokenL1 = "0x5C221E77624690fff6dd741493D735a17716c26B";
-             * const gas = await wallet.estimateGasDeposit({
-             *   token: tokenL1,
-             *   amount: 10_000_000n,
-             * });
-             * console.log(`Gas: ${gas}`);
-             */
+            bridgeAddress?: string | undefined;
             approveERC20?: boolean | undefined;
             approveBaseERC20?: boolean | undefined;
             l2GasLimit?: BigNumberish | undefined;
@@ -214,22 +176,7 @@ declare const Wallet_base: {
         getDepositTx(transaction: {
             token: string;
             amount: BigNumberish;
-            to?: string | undefined; /**
-             * @inheritDoc
-             *
-             * @example
-             *
-             * import { Wallet, Provider, types, utils } from "zksync-ethers";
-             * import { ethers } from "ethers";
-             *
-             * const PRIVATE_KEY = "<WALLET_PRIVATE_KEY>";
-             *
-             * const provider = Provider.getDefaultProvider(types.Network.Sepolia);
-             * const ethProvider = ethers.getDefaultProvider("sepolia");
-             * const wallet = new Wallet(PRIVATE_KEY, provider, ethProvider);
-             *
-             * console.log(`Nonce: ${await wallet.getDeploymentNonce()}`);
-             */
+            to?: string | undefined;
             operatorTip?: BigNumberish | undefined;
             bridgeAddress?: string | undefined;
             l2GasLimit?: BigNumberish | undefined;
@@ -314,7 +261,23 @@ declare const Wallet_base: {
             token: string;
             amount: BigNumberish;
             to?: string | undefined;
-            operatorTip?: BigNumberish | undefined;
+            operatorTip?: BigNumberish | undefined; /**
+             * Connects to the L2 network using `provider`.
+             *
+             * @param provider The provider instance for connecting to an L2 network.
+             *
+             * @see {@link connectToL1} in order to connect to L1 network.
+             *
+             * @example
+             *
+             * import { Wallet, Provider, types } from "zksync-ethers";
+             *
+             * const PRIVATE_KEY = "<WALLET_PRIVATE_KEY>";
+             * const unconnectedWallet = new Wallet(PRIVATE_KEY);
+             *
+             * const provider = Provider.getDefaultProvider(types.Network.Sepolia);
+             * const wallet = unconnectedWallet.connect(provider);
+             */
             bridgeAddress?: string | undefined;
             l2GasLimit?: BigNumberish | undefined;
             gasPerPubdataByte?: BigNumberish | undefined;

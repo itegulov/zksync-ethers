@@ -124,6 +124,10 @@ export declare function JsonRpcApiProvider<TBase extends Constructor<ethers.Json
          */
         getGasPrice(): Promise<bigint>;
         /**
+         * Returns an estimate (best guess) of the gas per pubdata to use in a transaction.
+         */
+        getGasPerPubdata(): Promise<bigint>;
+        /**
          * Returns the proof for a transaction's L2 to L1 log sent via the `L1Messenger` system contract.
          *
          * Calls the {@link https://docs.zksync.io/build/api.html#zks-getl2tol1logproof zks_getL2ToL1LogProof} JSON-RPC method.
@@ -477,9 +481,6 @@ export declare function JsonRpcApiProvider<TBase extends Constructor<ethers.Json
          * @param to The recipient address on the L2 network.
          * @param from The sender address on the L1 network.
          * @param gasPerPubdataByte The current gas per byte of pubdata.
-         *
-         * @see
-         * {@link https://docs.zksync.io/build/developer-reference/bridging-asset.html#default-bridges Default bridges documentation}.
          */
         estimateDefaultBridgeDepositL2Gas(providerL1: ethers.Provider, token: Address, amount: BigNumberish, to: Address, from?: Address, gasPerPubdataByte?: BigNumberish): Promise<bigint>;
         /**
@@ -494,9 +495,6 @@ export declare function JsonRpcApiProvider<TBase extends Constructor<ethers.Json
          * @param from The sender address on the L1 network.
          * @param gasPerPubdataByte The current gas per byte of pubdata.
          * @param l2Value The `msg.value` of L2 transaction.
-         *
-         * @see
-         * {@link https://docs.zksync.io/build/developer-reference/bridging-asset.html#custom-bridges-on-l1-and-l2 Custom bridges documentation}.
          */
         estimateCustomBridgeDepositL2Gas(l1BridgeAddress: Address, l2BridgeAddress: Address, token: Address, amount: BigNumberish, to: Address, bridgeData: BytesLike, from: Address, gasPerPubdataByte?: BigNumberish, l2Value?: BigNumberish): Promise<bigint>;
         /**
@@ -567,7 +565,11 @@ export declare function JsonRpcApiProvider<TBase extends Constructor<ethers.Json
         _getProvider(chainId: number): ethers.AbstractProvider;
         getResolver(name: string): Promise<ethers.EnsResolver | null>;
         getAvatar(name: string): Promise<string | null>;
-        resolveName(name: string): Promise<string | null>;
+        resolveName(name: string): Promise<string | null>; /**
+         * Returns the main ZKsync Era smart contract address.
+         *
+         * Calls the {@link https://docs.zksync.io/build/api.html#zks-getmaincontract zks_getMainContract} JSON-RPC method.
+         */
         lookupAddress(address: string): Promise<string | null>;
         waitForTransaction(hash: string, _confirms?: number | null | undefined, timeout?: number | null | undefined): Promise<ethers.TransactionReceipt | null>;
         waitForBlock(blockTag?: ethers.BlockTag | undefined): Promise<ethers.Block>;
@@ -710,6 +712,10 @@ declare const Provider_base: {
          * Returns an estimate (best guess) of the gas price to use in a transaction.
          */
         getGasPrice(): Promise<bigint>;
+        /**
+         * Returns an estimate (best guess) of the gas per pubdata to use in a transaction.
+         */
+        getGasPerPubdata(): Promise<bigint>;
         /**
          * Returns the proof for a transaction's L2 to L1 log sent via the `L1Messenger` system contract.
          *
@@ -1064,9 +1070,6 @@ declare const Provider_base: {
          * @param to The recipient address on the L2 network.
          * @param from The sender address on the L1 network.
          * @param gasPerPubdataByte The current gas per byte of pubdata.
-         *
-         * @see
-         * {@link https://docs.zksync.io/build/developer-reference/bridging-asset.html#default-bridges Default bridges documentation}.
          */
         estimateDefaultBridgeDepositL2Gas(providerL1: ethers.Provider, token: string, amount: ethers.BigNumberish, to: string, from?: string | undefined, gasPerPubdataByte?: ethers.BigNumberish | undefined): Promise<bigint>;
         /**
@@ -1081,9 +1084,6 @@ declare const Provider_base: {
          * @param from The sender address on the L1 network.
          * @param gasPerPubdataByte The current gas per byte of pubdata.
          * @param l2Value The `msg.value` of L2 transaction.
-         *
-         * @see
-         * {@link https://docs.zksync.io/build/developer-reference/bridging-asset.html#custom-bridges-on-l1-and-l2 Custom bridges documentation}.
          */
         estimateCustomBridgeDepositL2Gas(l1BridgeAddress: string, l2BridgeAddress: string, token: string, amount: ethers.BigNumberish, to: string, bridgeData: ethers.BytesLike, from: string, gasPerPubdataByte?: ethers.BigNumberish | undefined, l2Value?: ethers.BigNumberish | undefined): Promise<bigint>;
         /**
@@ -1154,7 +1154,11 @@ declare const Provider_base: {
         _getProvider(chainId: number): ethers.AbstractProvider;
         getResolver(name: string): Promise<ethers.EnsResolver | null>;
         getAvatar(name: string): Promise<string | null>;
-        resolveName(name: string): Promise<string | null>;
+        resolveName(name: string): Promise<string | null>; /**
+         * Returns the main ZKsync Era smart contract address.
+         *
+         * Calls the {@link https://docs.zksync.io/build/api.html#zks-getmaincontract zks_getMainContract} JSON-RPC method.
+         */
         lookupAddress(address: string): Promise<string | null>;
         waitForTransaction(hash: string, _confirms?: number | null | undefined, timeout?: number | null | undefined): Promise<ethers.TransactionReceipt | null>;
         waitForBlock(blockTag?: ethers.BlockTag | undefined): Promise<ethers.Block>;
@@ -2154,6 +2158,10 @@ declare const BrowserProvider_base: {
          */
         getGasPrice(): Promise<bigint>;
         /**
+         * Returns an estimate (best guess) of the gas per pubdata to use in a transaction.
+         */
+        getGasPerPubdata(): Promise<bigint>;
+        /**
          * Returns the proof for a transaction's L2 to L1 log sent via the `L1Messenger` system contract.
          *
          * Calls the {@link https://docs.zksync.io/build/api.html#zks-getl2tol1logproof zks_getL2ToL1LogProof} JSON-RPC method.
@@ -2507,9 +2515,6 @@ declare const BrowserProvider_base: {
          * @param to The recipient address on the L2 network.
          * @param from The sender address on the L1 network.
          * @param gasPerPubdataByte The current gas per byte of pubdata.
-         *
-         * @see
-         * {@link https://docs.zksync.io/build/developer-reference/bridging-asset.html#default-bridges Default bridges documentation}.
          */
         estimateDefaultBridgeDepositL2Gas(providerL1: ethers.Provider, token: string, amount: ethers.BigNumberish, to: string, from?: string | undefined, gasPerPubdataByte?: ethers.BigNumberish | undefined): Promise<bigint>;
         /**
@@ -2524,9 +2529,6 @@ declare const BrowserProvider_base: {
          * @param from The sender address on the L1 network.
          * @param gasPerPubdataByte The current gas per byte of pubdata.
          * @param l2Value The `msg.value` of L2 transaction.
-         *
-         * @see
-         * {@link https://docs.zksync.io/build/developer-reference/bridging-asset.html#custom-bridges-on-l1-and-l2 Custom bridges documentation}.
          */
         estimateCustomBridgeDepositL2Gas(l1BridgeAddress: string, l2BridgeAddress: string, token: string, amount: ethers.BigNumberish, to: string, bridgeData: ethers.BytesLike, from: string, gasPerPubdataByte?: ethers.BigNumberish | undefined, l2Value?: ethers.BigNumberish | undefined): Promise<bigint>;
         /**
@@ -2597,7 +2599,11 @@ declare const BrowserProvider_base: {
         _getProvider(chainId: number): ethers.AbstractProvider;
         getResolver(name: string): Promise<ethers.EnsResolver | null>;
         getAvatar(name: string): Promise<string | null>;
-        resolveName(name: string): Promise<string | null>;
+        resolveName(name: string): Promise<string | null>; /**
+         * Returns the main ZKsync Era smart contract address.
+         *
+         * Calls the {@link https://docs.zksync.io/build/api.html#zks-getmaincontract zks_getMainContract} JSON-RPC method.
+         */
         lookupAddress(address: string): Promise<string | null>;
         waitForTransaction(hash: string, _confirms?: number | null | undefined, timeout?: number | null | undefined): Promise<ethers.TransactionReceipt | null>;
         waitForBlock(blockTag?: ethers.BlockTag | undefined): Promise<ethers.Block>;

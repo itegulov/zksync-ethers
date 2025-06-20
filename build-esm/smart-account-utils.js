@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, resolveProperties } from 'ethers';
 import { EIP712_TX_TYPE } from './utils';
 /**
  * Signs the `payload` using an ECDSA private key.
@@ -165,7 +165,7 @@ export const signPayloadWithMultipleECDSA = async (payload, secret) => {
  * );
  */
 export const populateTransactionECDSA = async (tx, secret, provider) => {
-    var _a, _b;
+    var _a;
     if (!provider) {
         throw new Error('Provider is required but is not provided!');
     }
@@ -193,15 +193,23 @@ export const populateTransactionECDSA = async (tx, secret, provider) => {
             // In order to estimation gas, the transaction's from value is replaced with signer's address.
             fromToUse = new ethers.Wallet(secret).address;
         }
-        const fee = await provider.estimateFee({
-            ...populatedTx,
-            from: fromToUse,
+        const { gasLimit, gasPrice, gasPerPubdata } = await resolveProperties({
+            gasLimit: (async () => tx.gasLimit ??
+                (await provider.estimateGas({
+                    ...populatedTx,
+                    from: fromToUse,
+                })))(),
+            gasPrice: (async () => tx.gasPrice ?? tx.maxFeePerGas ?? (await provider.getGasPrice()))(),
+            gasPerPubdata: (async () => tx.customData?.gasPerPubdata ?? (await provider.getGasPerPubdata()))(),
         });
-        populatedTx.gasLimit ?? (populatedTx.gasLimit = fee.gasLimit);
-        (_b = populatedTx.customData).gasPerPubdata ?? (_b.gasPerPubdata = fee.gasPerPubdataLimit);
-        if (!populatedTx.gasPrice) {
-            populatedTx.maxFeePerGas ?? (populatedTx.maxFeePerGas = fee.maxFeePerGas);
-            populatedTx.maxPriorityFeePerGas ?? (populatedTx.maxPriorityFeePerGas = fee.maxPriorityFeePerGas);
+        populatedTx.gasLimit ?? (populatedTx.gasLimit = gasLimit);
+        populatedTx.customData.gasPerPubdata = gasPerPubdata;
+        if (!populatedTx.gasPrice && populatedTx.type === 0) {
+            populatedTx.gasPrice = gasPrice;
+        }
+        else if (!populatedTx.gasPrice && tx.type !== 0) {
+            populatedTx.maxFeePerGas = gasPrice;
+            populatedTx.maxPriorityFeePerGas ?? (populatedTx.maxPriorityFeePerGas = BigInt(0));
         }
     }
     populatedTx.nonce ?? (populatedTx.nonce = await provider.getTransactionCount(populatedTx.from, 'pending'));

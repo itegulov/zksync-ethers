@@ -170,7 +170,7 @@ exports.signPayloadWithMultipleECDSA = signPayloadWithMultipleECDSA;
  * );
  */
 const populateTransactionECDSA = async (tx, secret, provider) => {
-    var _a, _b;
+    var _a;
     if (!provider) {
         throw new Error('Provider is required but is not provided!');
     }
@@ -198,15 +198,23 @@ const populateTransactionECDSA = async (tx, secret, provider) => {
             // In order to estimation gas, the transaction's from value is replaced with signer's address.
             fromToUse = new ethers_1.ethers.Wallet(secret).address;
         }
-        const fee = await provider.estimateFee({
-            ...populatedTx,
-            from: fromToUse,
+        const { gasLimit, gasPrice, gasPerPubdata } = await (0, ethers_1.resolveProperties)({
+            gasLimit: (async () => tx.gasLimit ??
+                (await provider.estimateGas({
+                    ...populatedTx,
+                    from: fromToUse,
+                })))(),
+            gasPrice: (async () => tx.gasPrice ?? tx.maxFeePerGas ?? (await provider.getGasPrice()))(),
+            gasPerPubdata: (async () => tx.customData?.gasPerPubdata ?? (await provider.getGasPerPubdata()))(),
         });
-        populatedTx.gasLimit ?? (populatedTx.gasLimit = fee.gasLimit);
-        (_b = populatedTx.customData).gasPerPubdata ?? (_b.gasPerPubdata = fee.gasPerPubdataLimit);
-        if (!populatedTx.gasPrice) {
-            populatedTx.maxFeePerGas ?? (populatedTx.maxFeePerGas = fee.maxFeePerGas);
-            populatedTx.maxPriorityFeePerGas ?? (populatedTx.maxPriorityFeePerGas = fee.maxPriorityFeePerGas);
+        populatedTx.gasLimit ?? (populatedTx.gasLimit = gasLimit);
+        populatedTx.customData.gasPerPubdata = gasPerPubdata;
+        if (!populatedTx.gasPrice && populatedTx.type === 0) {
+            populatedTx.gasPrice = gasPrice;
+        }
+        else if (!populatedTx.gasPrice && tx.type !== 0) {
+            populatedTx.maxFeePerGas = gasPrice;
+            populatedTx.maxPriorityFeePerGas ?? (populatedTx.maxPriorityFeePerGas = BigInt(0));
         }
     }
     populatedTx.nonce ?? (populatedTx.nonce = await provider.getTransactionCount(populatedTx.from, 'pending'));

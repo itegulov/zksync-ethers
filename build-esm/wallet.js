@@ -1,6 +1,6 @@
 import { EIP712Signer } from './signer';
 import { EIP712_TX_TYPE, serializeEip712 } from './utils';
-import { ethers, } from 'ethers';
+import { ethers, resolveProperties, } from 'ethers';
 import { AdapterL1, AdapterL2 } from './adapters';
 /**
  * A `Wallet` is an extension of {@link ethers.Wallet} with additional features for interacting with ZKsync Era.
@@ -1193,36 +1193,41 @@ export class Wallet extends AdapterL2(AdapterL1(ethers.Wallet)) {
      * });
      */
     async populateTransaction(tx) {
-        var _a;
         const populated = (await this.populateCall(tx));
         if (populated.gasPrice &&
             (populated.maxFeePerGas || populated.maxPriorityFeePerGas)) {
             throw new Error('Provide combination of maxFeePerGas and maxPriorityFeePerGas or provide gasPrice. Not both!');
         }
-        let fee;
-        if (!populated.gasLimit ||
-            !tx.customData ||
-            !tx.customData.gasPerPubdata ||
-            (!populated.gasPrice &&
-                (!populated.maxFeePerGas ||
-                    populated.maxPriorityFeePerGas === null ||
-                    populated.maxPriorityFeePerGas === undefined))) {
-            fee = await this.provider.estimateFee(populated);
-            populated.gasLimit ?? (populated.gasLimit = fee.gasLimit);
-            if (!populated.gasPrice && populated.type === 0) {
-                populated.gasPrice = fee.maxFeePerGas;
-            }
-            else if (!populated.gasPrice && populated.type !== 0) {
-                populated.maxFeePerGas ?? (populated.maxFeePerGas = fee.maxFeePerGas);
-                populated.maxPriorityFeePerGas ?? (populated.maxPriorityFeePerGas = fee.maxPriorityFeePerGas);
-            }
+        const { gasLimit, gasPrice, gasPerPubdata } = await resolveProperties({
+            gasLimit: (async () => populated.gasLimit ?? (await this.provider.estimateGas(populated)))(),
+            gasPrice: (async () => tx.gasPrice ??
+                tx.maxFeePerGas ??
+                (await this.provider.getGasPrice()))(),
+            gasPerPubdata: (async () => {
+                if (tx.type === null ||
+                    tx.type === undefined ||
+                    tx.type === EIP712_TX_TYPE ||
+                    tx.customData) {
+                    return (tx.customData?.gasPerPubdata ??
+                        (await this.provider.getGasPerPubdata()));
+                }
+                return undefined;
+            })(),
+        });
+        populated.gasLimit = gasLimit;
+        if (!populated.gasPrice && populated.type === 0) {
+            populated.gasPrice = gasPrice;
+        }
+        else if (!populated.gasPrice && populated.type !== 0) {
+            populated.maxFeePerGas = gasPrice;
+            populated.maxPriorityFeePerGas ?? (populated.maxPriorityFeePerGas = BigInt(0));
         }
         if (tx.type === null ||
             tx.type === undefined ||
             tx.type === EIP712_TX_TYPE ||
             tx.customData) {
             tx.customData ?? (tx.customData = {});
-            (_a = tx.customData).gasPerPubdata ?? (_a.gasPerPubdata = fee.gasPerPubdataLimit);
+            tx.customData.gasPerPubdata = gasPerPubdata;
             populated.type = EIP712_TX_TYPE;
             populated.value ?? (populated.value = 0);
             populated.data ?? (populated.data = '0x');
